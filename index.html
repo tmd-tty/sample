@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>事業総合保険 設計・申込書作成</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="app-header no-print">
+    <h1>事業総合保険 設計・申込書作成</h1>
+    <nav class="toolbar">
+      <button type="button" id="btn-new">新規</button>
+      <button type="button" id="btn-save">一時保存</button>
+      <button type="button" id="btn-open">保存データを開く</button>
+      <span class="sep"></span>
+      <button type="button" id="btn-export">ファイルに書き出し</button>
+      <label class="button">ファイルから読み込み<input type="file" id="file-import" accept=".json,application/json" hidden></label>
+    </nav>
+  </header>
+
+  <div class="statusbar no-print">
+    <span>申込番号: <strong id="app-no">（未保存）</strong></span>
+    <span id="saved-at"></span>
+    <span id="toast" class="toast" role="status"></span>
+  </div>
+
+  <main class="layout no-print">
+    <form id="form" novalidate autocomplete="off">
+      <section class="card">
+        <h2>1. 申込日・保険期間</h2>
+        <div class="grid">
+          <div class="field" data-field="applyDate">
+            <label>申込日<span class="req">必須</span></label>
+            <input type="date" name="applyDate">
+            <p class="err"></p>
+          </div>
+          <div class="field" data-field="period.start">
+            <label>保険始期日<span class="req">必須</span></label>
+            <input type="date" name="period.start">
+            <p class="hint" id="period-hint"></p>
+            <p class="err"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>2. 契約者（法人）</h2>
+        <div class="grid">
+          <div class="field span-2" data-field="policyholder.corpName">
+            <label>法人名<span class="req">必須</span></label>
+            <input name="policyholder.corpName" placeholder="株式会社サンプル商事">
+            <p class="err"></p>
+          </div>
+          <div class="field span-2" data-field="policyholder.corpKana">
+            <label>法人名フリガナ<span class="req">必須</span></label>
+            <input name="policyholder.corpKana" placeholder="カブシキガイシャ サンプルショウジ">
+            <p class="err"></p>
+          </div>
+          <div class="field" data-field="policyholder.corpNumber">
+            <label>法人番号<span class="req">必須</span></label>
+            <input name="policyholder.corpNumber" inputmode="numeric" maxlength="13" placeholder="13桁の数字">
+            <p class="err"></p>
+          </div>
+          <div></div>
+          <div class="field" data-field="policyholder.repTitle">
+            <label>代表者役職<span class="req">必須</span></label>
+            <input name="policyholder.repTitle" placeholder="代表取締役">
+            <p class="err"></p>
+          </div>
+          <div class="field" data-field="policyholder.repName">
+            <label>代表者氏名<span class="req">必須</span></label>
+            <input name="policyholder.repName" placeholder="保険 太郎">
+            <p class="err"></p>
+          </div>
+          <div class="field" data-field="policyholder.zip">
+            <label>郵便番号<span class="req">必須</span></label>
+            <input name="policyholder.zip" inputmode="numeric" placeholder="100-0001" class="w-short">
+            <p class="err"></p>
+          </div>
+          <div class="field span-2" data-field="policyholder.address">
+            <label>所在地<span class="req">必須</span></label>
+            <input name="policyholder.address" placeholder="東京都千代田区千代田1-1">
+            <p class="err"></p>
+          </div>
+          <div class="field" data-field="policyholder.tel">
+            <label>電話番号<span class="req">必須</span></label>
+            <input name="policyholder.tel" inputmode="tel" placeholder="03-1234-5678">
+            <p class="err"></p>
+          </div>
+          <div></div>
+          <div class="field" data-field="policyholder.contactName">
+            <label>ご担当者名<span class="opt">任意</span></label>
+            <input name="policyholder.contactName">
+            <p class="err"></p>
+          </div>
+          <div class="field" data-field="policyholder.email">
+            <label>ご担当者メール<span class="opt">任意</span></label>
+            <input name="policyholder.email" inputmode="email" placeholder="tanto@example.co.jp">
+            <p class="err"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>3. 事業内容</h2>
+        <div class="grid">
+          <div class="field span-2" data-field="business.industry">
+            <label>業種<span class="req">必須</span></label>
+            <select name="business.industry" data-options="industries">
+              <option value="">選択してください</option>
+            </select>
+            <p class="err"></p>
+          </div>
+          <div class="field" data-field="business.sales">
+            <label>年間売上高<span class="opt">賠償責任を付帯する場合は必須</span></label>
+            <div class="suffix"><input name="business.sales" inputmode="numeric" class="w-short" placeholder="50000"><span>万円</span></div>
+            <p class="hint" data-man-of="business.sales"></p>
+            <p class="err"></p>
+          </div>
+          <div class="field" data-field="business.employees">
+            <label>従業員数<span class="opt">任意</span></label>
+            <div class="suffix"><input name="business.employees" inputmode="numeric" class="w-short"><span>人</span></div>
+            <p class="err"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>4. 保険の対象の所在地・建物</h2>
+        <label class="check"><input type="checkbox" name="location.same" checked>契約者の所在地と同じ</label>
+        <div class="grid" data-show-if="location.same" data-show-value="false">
+          <div class="field" data-field="location.zip">
+            <label>郵便番号<span class="req">必須</span></label>
+            <input name="location.zip" inputmode="numeric" placeholder="100-0001" class="w-short">
+            <p class="err"></p>
+          </div>
+          <div class="field span-2" data-field="location.address">
+            <label>所在地<span class="req">必須</span></label>
+            <input name="location.address">
+            <p class="err"></p>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="field" data-field="location.structure">
+            <label>構造級別<span class="opt">財物補償を付帯する場合は必須</span></label>
+            <select name="location.structure" data-options="structures">
+              <option value="">選択してください</option>
+            </select>
+            <p class="err"></p>
+          </div>
+          <div class="field" data-field="location.builtYear">
+            <label>建築年（西暦）<span class="opt">建物を補償する場合は必須</span></label>
+            <div class="suffix"><input name="location.builtYear" inputmode="numeric" maxlength="4" class="w-short" placeholder="2005"><span>年</span></div>
+            <p class="err"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>5. 補償内容</h2>
+        <div class="field" data-field="coverage"><p class="err"></p></div>
+
+        <h3 class="subhead">財物補償（火災・落雷・破裂・爆発・風災・水濡れ・盗難 等）</h3>
+        <div class="grid grid-3">
+          <div class="field" data-field="coverage.building">
+            <label>建物</label>
+            <div class="suffix"><input name="coverage.building" inputmode="numeric" placeholder="0"><span>万円</span></div>
+            <p class="hint" data-man-of="coverage.building"></p>
+            <p class="err"></p>
+          </div>
+          <div class="field" data-field="coverage.equipment">
+            <label>設備・什器</label>
+            <div class="suffix"><input name="coverage.equipment" inputmode="numeric" placeholder="0"><span>万円</span></div>
+            <p class="hint" data-man-of="coverage.equipment"></p>
+            <p class="err"></p>
+          </div>
+          <div class="field" data-field="coverage.stock">
+            <label>商品・製品</label>
+            <div class="suffix"><input name="coverage.stock" inputmode="numeric" placeholder="0"><span>万円</span></div>
+            <p class="hint" data-man-of="coverage.stock"></p>
+            <p class="err"></p>
+          </div>
+          <div class="field" data-field="coverage.deductible">
+            <label>免責金額（1事故あたり）</label>
+            <select name="coverage.deductible" data-options="deductibles"></select>
+            <p class="err"></p>
+          </div>
+        </div>
+
+        <h3 class="subhead">賠償責任（施設・業務遂行中の対人・対物事故）</h3>
+        <div class="grid">
+          <div class="field" data-field="coverage.liability">
+            <label>支払限度額（1事故）</label>
+            <select name="coverage.liability" data-options="liabilityLimits"></select>
+            <p class="err"></p>
+          </div>
+        </div>
+
+        <h3 class="subhead">休業補償（事故による営業休止時の利益・営業継続費用）</h3>
+        <label class="check"><input type="checkbox" name="coverage.bi">休業補償を付帯する</label>
+        <div class="grid" data-show-if="coverage.bi" data-show-value="true">
+          <div class="field" data-field="coverage.biDaily">
+            <label>支払限度日額<span class="req">必須</span></label>
+            <div class="suffix"><input name="coverage.biDaily" inputmode="numeric" class="w-short" placeholder="10"><span>万円</span></div>
+            <p class="err"></p>
+          </div>
+          <div class="field" data-field="coverage.biPeriod">
+            <label>約定てん補期間<span class="req">必須</span></label>
+            <select name="coverage.biPeriod" data-options="biPeriods"></select>
+            <p class="err"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>6. 払込方法</h2>
+        <div class="field" data-field="payment">
+          <div class="radios" id="payment-radios"></div>
+          <p class="err"></p>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>7. 告知</h2>
+        <div id="disclosure-questions"></div>
+        <div class="grid">
+          <div class="field" data-field="disclosure.accidents">
+            <label>質問1が「はい」の場合の事故件数</label>
+            <div class="suffix"><input name="disclosure.accidents" inputmode="numeric" class="w-short"><span>件</span></div>
+            <p class="err"></p>
+          </div>
+        </div>
+        <div class="field" data-field="disclosure.detail">
+          <label>「はい」がある場合の詳細（発生時期・事故内容・支払保険金、他の契約の保険会社名 等）</label>
+          <textarea name="disclosure.detail" rows="3"></textarea>
+          <p class="err"></p>
+        </div>
+      </section>
+    </form>
+
+    <aside class="side">
+      <div class="card sticky">
+        <h2>保険料試算</h2>
+        <div id="premium"></div>
+        <div id="warnings"></div>
+        <div id="error-summary"></div>
+        <button type="button" id="btn-generate" class="primary">申込書を作成</button>
+        <p class="hint">料率: <span id="rate-version"></span>（サンプル料率・架空の値）</p>
+      </div>
+    </aside>
+  </main>
+
+  <!-- 申込書プレビュー（印刷時はこの部分だけが出力される） -->
+  <div id="preview" class="preview" hidden>
+    <div class="preview-bar no-print">
+      <button type="button" id="btn-print" class="primary">印刷 / PDF保存</button>
+      <button type="button" id="btn-close">入力に戻る</button>
+      <span class="hint">印刷ダイアログで送信先を「PDFに保存」にするとPDFで保存できます</span>
+    </div>
+    <div id="sheet" class="sheet"></div>
+  </div>
+
+  <dialog id="open-dialog" class="no-print">
+    <h2>保存データを開く</h2>
+    <p class="hint">このブラウザに一時保存したデータです。別のPCやブラウザへ移すには「ファイルに書き出し」を使ってください。</p>
+    <div id="draft-list"></div>
+    <div class="dialog-actions"><button type="button" id="btn-dialog-close">閉じる</button></div>
+  </dialog>
+
+  <!-- 読み込み順に意味がある（後のファイルが前のファイルを使う）。tests/load.js もこの順で読み込む -->
+  <script src="js/lib/util.js"></script>
+  <script src="js/master/rates.js"></script>
+  <script src="js/master/questions.js"></script>
+  <script src="js/lib/checks.js"></script>
+  <script src="js/rules/facts.js"></script>
+  <script src="js/rules/validation.js"></script>
+  <script src="js/rules/premium.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
